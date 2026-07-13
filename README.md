@@ -24,7 +24,7 @@ C:\Users\duong.tran\Documents\Codex-Project\hsk-learning-web\index.html
 - Mỗi chủ đề có 12 hội thoại cho từng HSK, kèm tiếng Trung, pinyin, nghĩa tiếng Việt, nút nghe và link tìm thêm trên YouTube.
 - Video theo từng HSK, lấy danh sách công khai từ Corodomo/YouTube, có thumbnail, player nhúng YouTube, bộ lọc tag và khung câu luyện nghe tiếng Trung-pinyin-Việt.
 - Ngữ pháp theo từng HSK, gồm cấu trúc, ví dụ tiếng Trung-pinyin-Việt và quiz kiểm tra. Bộ mở rộng lấy khung chủ điểm từ PrepEdu và được viết lại bằng ví dụ riêng cho app.
-- Dịch tiếng Trung sang tiếng Việt hoặc tiếng Anh bằng giao diện hai khung kiểu Google Dịch, kèm OCR ảnh bằng Tesseract.js khi có mạng.
+- Dịch tự phát hiện ngôn ngữ theo kiểu Google Dịch, hỗ trợ Trung/Việt/Anh hai chiều và OCR ảnh bằng Tesseract.js khi có mạng.
 - Từ vựng có phân trang 15 từ/trang; hội thoại có phân trang 5 hội thoại/trang.
 - Đăng nhập bằng tài khoản mặc định `admin/123456`, `guest/123456`, `user/123456`; cùng một username đang hoạt động sẽ bị chặn đăng nhập lại, phiên đóng đột ngột tự hết hạn sau khoảng 15 giây.
 

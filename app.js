@@ -41,9 +41,13 @@ let resizeTimer = null;
 let flashQuiz = null;
 let authHeartbeatTimer = null;
 let tesseractScriptLoading = null;
+let translateDebounceTimer = null;
+let translateRequestId = 0;
 
 const translationState = {
   mode: "text",
+  sourceLanguage: "auto",
+  detectedSource: "",
   source: "",
   target: "vi",
   extracted: "",
@@ -51,6 +55,13 @@ const translationState = {
   status: "",
   error: "",
   imageName: ""
+};
+
+const translateLanguages = {
+  auto: { label: "Phát hiện ngôn ngữ", code: "auto", speech: "zh-CN" },
+  zh: { label: "Trung (Giản thể)", code: "zh-CN", speech: "zh-CN" },
+  vi: { label: "Việt", code: "vi", speech: "vi-VN" },
+  en: { label: "Anh", code: "en", speech: "en-US" }
 };
 
 const practiceState = {
@@ -357,6 +368,66 @@ function translateToolIcon(name) {
       ${paths[name] || paths.text}
     </svg>
   `;
+}
+
+function languageLabel(language) {
+  return translateLanguages[language]?.label || language;
+}
+
+function normalizeTranslateLanguage(language) {
+  const value = String(language || "").toLowerCase();
+  if (value.startsWith("zh") || value.includes("chinese")) return "zh";
+  if (value.startsWith("vi")) return "vi";
+  if (value.startsWith("en")) return "en";
+  return "";
+}
+
+function detectSourceLanguage(text) {
+  const source = String(text || "").trim();
+  if (!source) return "";
+  if (/[\u3400-\u9fff]/.test(source)) return "zh";
+  if (/[ăâđêôơưáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(source)) return "vi";
+  if (/\b(tôi|bạn|xin|chào|không|cảm ơn|nhà|máy|khách|hàng|sản xuất)\b/i.test(source)) return "vi";
+  if (/[a-z]/i.test(source)) return "en";
+  return "";
+}
+
+function effectiveSourceLanguage(text = translationState.source) {
+  if (translationState.sourceLanguage !== "auto") return translationState.sourceLanguage;
+  return translationState.detectedSource || detectSourceLanguage(text) || "";
+}
+
+function fallbackTargetFor(sourceLanguage) {
+  if (sourceLanguage === "zh") return "vi";
+  if (sourceLanguage === "vi") return "zh";
+  if (sourceLanguage === "en") return "vi";
+  return translationState.target || "vi";
+}
+
+function ensureDifferentTarget(sourceLanguage) {
+  const source = normalizeTranslateLanguage(sourceLanguage);
+  if (source && source === translationState.target) {
+    translationState.target = fallbackTargetFor(source);
+  }
+  return translationState.target;
+}
+
+function updateTranslateLanguageUi() {
+  document.querySelectorAll("[data-translate='source']").forEach((button) => {
+    button.classList.toggle("active", button.dataset.source === translationState.sourceLanguage);
+  });
+  document.querySelectorAll("[data-translate='target']").forEach((button) => {
+    button.classList.toggle("active", button.dataset.target === translationState.target);
+  });
+}
+
+function scheduleTranslate() {
+  window.clearTimeout(translateDebounceTimer);
+  if (!translationState.source.trim()) {
+    setTranslateStatus({ status: "", error: "", result: "", extracted: translationState.extracted });
+    return;
+  }
+  translateDebounceTimer = window.setTimeout(() => translateChineseText(), 650);
 }
 
 function renderMeaning(word, options = {}) {
@@ -1237,7 +1308,8 @@ function renderGrammar() {
 }
 
 function renderTranslate() {
-  const targetLabel = translationState.target === "en" ? "Anh" : "Việt";
+  const targetLabel = languageLabel(translationState.target);
+  const sourcePlaceholder = translationState.sourceLanguage === "zh" ? "Nhập tiếng Trung cần dịch..." : "Nhập văn bản cần dịch...";
   const hasSource = Boolean(translationState.source.trim());
   const hasResult = Boolean(translationState.result.trim());
   elements.contentArea.innerHTML = `
@@ -1263,10 +1335,10 @@ function renderTranslate() {
 
       <div class="translate-language-row">
         <div class="language-tabs" aria-label="Ngôn ngữ nguồn">
-          <button class="language-tab active" type="button">Phát hiện ngôn ngữ</button>
-          <button class="language-tab" type="button" disabled>Anh</button>
-          <button class="language-tab" type="button" disabled>Việt</button>
-          <button class="language-tab" type="button" disabled>Pháp</button>
+          <button class="language-tab${translationState.sourceLanguage === "auto" ? " active" : ""}" type="button" data-translate="source" data-source="auto">Phát hiện ngôn ngữ</button>
+          <button class="language-tab${translationState.sourceLanguage === "zh" ? " active" : ""}" type="button" data-translate="source" data-source="zh">Trung</button>
+          <button class="language-tab${translationState.sourceLanguage === "vi" ? " active" : ""}" type="button" data-translate="source" data-source="vi">Việt</button>
+          <button class="language-tab${translationState.sourceLanguage === "en" ? " active" : ""}" type="button" data-translate="source" data-source="en">Anh</button>
           <button class="language-more" type="button" disabled aria-label="Thêm ngôn ngữ nguồn">⌄</button>
         </div>
         <button class="translate-swap-button" type="button" data-translate="swap" aria-label="Đổi chiều dịch" title="Đổi chiều dịch">
@@ -1275,7 +1347,7 @@ function renderTranslate() {
         <div class="language-tabs target-tabs" aria-label="Ngôn ngữ đích">
           <button class="language-tab${translationState.target === "vi" ? " active" : ""}" type="button" data-translate="target" data-target="vi">Việt</button>
           <button class="language-tab${translationState.target === "en" ? " active" : ""}" type="button" data-translate="target" data-target="en">Anh</button>
-          <button class="language-tab" type="button" disabled>Trung (Giản thể)</button>
+          <button class="language-tab${translationState.target === "zh" ? " active" : ""}" type="button" data-translate="target" data-target="zh">Trung (Giản thể)</button>
           <button class="language-more" type="button" disabled aria-label="Thêm ngôn ngữ đích">⌄</button>
         </div>
       </div>
@@ -1283,7 +1355,7 @@ function renderTranslate() {
       <div class="translate-board">
         <article class="translate-card translate-source-card">
           <div class="translate-card-body">
-            <textarea id="translateSource" aria-label="Nhập tiếng Trung" placeholder="Nhập chữ Trung cần dịch...">${htmlEscape(translationState.source)}</textarea>
+            <textarea id="translateSource" aria-label="Nhập nội dung cần dịch" placeholder="${htmlEscape(sourcePlaceholder)}">${htmlEscape(translationState.source)}</textarea>
             <button class="translate-clear-button${hasSource ? " show" : ""}" type="button" data-translate="clear" aria-label="Xóa nội dung" title="Xóa">
               ${translateToolIcon("close")}
             </button>
@@ -1349,7 +1421,7 @@ function setTranslateStatus({ status = translationState.status, error = translat
   }
   const resultTitle = document.querySelector(".translate-result-card h3");
   if (resultTitle) {
-    resultTitle.textContent = result ? (translationState.target === "en" ? "Anh" : "Việt") : "";
+    resultTitle.textContent = result ? languageLabel(translationState.target) : "";
     resultTitle.classList.toggle("empty", !result);
   }
   if (extractedElement) extractedElement.textContent = extracted || "";
@@ -1358,23 +1430,45 @@ function setTranslateStatus({ status = translationState.status, error = translat
 async function translateChineseText(text = translationState.source, target = translationState.target) {
   const source = text.trim();
   if (!source) {
-    setTranslateStatus({ error: "Vui lòng nhập tiếng Trung hoặc upload ảnh trước khi dịch.", status: "" });
+    setTranslateStatus({ error: "Vui lòng nhập nội dung hoặc upload ảnh trước khi dịch.", status: "" });
     return;
   }
+  const localDetected = detectSourceLanguage(source);
+  const requestedSource = translationState.sourceLanguage === "auto" ? "auto" : translateLanguages[translationState.sourceLanguage]?.code || "auto";
+  if (translationState.sourceLanguage !== "auto") {
+    translationState.detectedSource = translationState.sourceLanguage;
+  } else if (localDetected) {
+    translationState.detectedSource = localDetected;
+  }
+  target = ensureDifferentTarget(translationState.sourceLanguage === "auto" ? localDetected : translationState.sourceLanguage) || target;
+  updateTranslateLanguageUi();
+  const requestTarget = target;
+  const requestId = ++translateRequestId;
   setTranslateStatus({ status: "Đang dịch...", error: "" });
   try {
     const url = new URL("https://translate.googleapis.com/translate_a/single");
     url.searchParams.set("client", "gtx");
-    url.searchParams.set("sl", "zh-CN");
-    url.searchParams.set("tl", target);
+    url.searchParams.set("sl", requestedSource);
+    url.searchParams.set("tl", translateLanguages[target]?.code || target);
     url.searchParams.set("dt", "t");
     url.searchParams.set("q", source);
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error("translate failed");
     const data = await response.json();
+    if (requestId !== translateRequestId) return;
     const translated = (data?.[0] || []).map((part) => part?.[0] || "").join("").trim();
     if (!translated) throw new Error("empty translation");
-    setTranslateStatus({ status: "Dịch xong.", result: translated, error: "" });
+    const detected = normalizeTranslateLanguage(data?.[2]) || localDetected;
+    if (detected) {
+      translationState.detectedSource = detected;
+      target = ensureDifferentTarget(detected);
+      updateTranslateLanguageUi();
+      if (detected === requestTarget) {
+        return translateChineseText(source, target);
+      }
+    }
+    const detectedLabel = translationState.sourceLanguage === "auto" && translationState.detectedSource ? `Đã phát hiện: ${languageLabel(translationState.detectedSource)}.` : "Dịch xong.";
+    setTranslateStatus({ status: detectedLabel, result: translated, error: "" });
   } catch {
     setTranslateStatus({
       status: "",
@@ -1405,7 +1499,7 @@ async function translateImageFile(file) {
   try {
     const Tesseract = await loadTesseractScript();
     setTranslateStatus({ status: "Đang nhận diện chữ trong ảnh..." });
-    const result = await Tesseract.recognize(file, "chi_sim+eng", {
+    const result = await Tesseract.recognize(file, "chi_sim+vie+eng", {
       logger(message) {
         if (message.status === "recognizing text") {
           const progress = Math.round((message.progress || 0) * 100);
@@ -1962,13 +2056,15 @@ function setupPracticeCanvas(clearOnly = false) {
   redrawPracticeCanvas();
 }
 
-function speakChinese(text) {
+function speakChinese(text, language = "zh") {
   if (!("speechSynthesis" in window)) return;
   const utterance = new SpeechSynthesisUtterance(text);
   const voices = window.speechSynthesis.getVoices();
-  const zhVoice = voices.find((voice) => /zh|Chinese|Mandarin/i.test(`${voice.lang} ${voice.name}`));
-  if (zhVoice) utterance.voice = zhVoice;
-  utterance.lang = zhVoice ? zhVoice.lang : "zh-CN";
+  const speechLang = translateLanguages[language]?.speech || language || "zh-CN";
+  const languagePrefix = speechLang.split("-")[0];
+  const matchedVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(languagePrefix.toLowerCase()));
+  if (matchedVoice) utterance.voice = matchedVoice;
+  utterance.lang = matchedVoice ? matchedVoice.lang : speechLang;
   utterance.rate = 0.82;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
@@ -2082,22 +2178,44 @@ elements.contentArea.addEventListener("click", (event) => {
       translationState.error = "";
       renderTranslate();
     }
+    if (command === "source") {
+      translationState.sourceLanguage = button.dataset.source || "auto";
+      translationState.detectedSource = translationState.sourceLanguage === "auto" ? detectSourceLanguage(translationState.source) : translationState.sourceLanguage;
+      translationState.result = "";
+      translationState.error = "";
+      ensureDifferentTarget(effectiveSourceLanguage());
+      renderTranslate();
+      if (translationState.source.trim()) translateChineseText();
+    }
     if (command === "target") {
       translationState.target = button.dataset.target || "vi";
+      ensureDifferentTarget(effectiveSourceLanguage());
       translationState.result = "";
       translationState.error = "";
       renderTranslate();
       if (translationState.source.trim()) translateChineseText();
     }
     if (command === "swap") {
-      setTranslateStatus({ status: "", error: "Hiện tại công cụ này hỗ trợ dịch từ tiếng Trung sang tiếng Việt hoặc tiếng Anh." });
+      const currentSource = effectiveSourceLanguage() || detectSourceLanguage(translationState.source);
+      if (!currentSource || currentSource === "auto") {
+        setTranslateStatus({ status: "", error: "Vui lòng nhập nội dung trước khi đổi chiều dịch." });
+        return;
+      }
+      const oldTarget = translationState.target;
+      translationState.sourceLanguage = oldTarget;
+      translationState.detectedSource = oldTarget;
+      translationState.target = currentSource;
+      translationState.result = "";
+      translationState.error = "";
+      renderTranslate();
+      if (translationState.source.trim()) translateChineseText();
     }
     if (command === "speak-source") {
-      if (translationState.source.trim()) speakChinese(translationState.source);
+      if (translationState.source.trim()) speakChinese(translationState.source, effectiveSourceLanguage() || "zh");
       else setTranslateStatus({ status: "", error: "Vui lòng nhập nội dung trước khi nghe." });
     }
     if (command === "speak-result") {
-      if (translationState.result.trim()) speakChinese(translationState.result);
+      if (translationState.result.trim()) speakChinese(translationState.result, translationState.target);
       else setTranslateStatus({ status: "", error: "Chưa có bản dịch để nghe." });
     }
     if (command === "clear") {
@@ -2166,7 +2284,13 @@ elements.contentArea.addEventListener("click", (event) => {
 elements.contentArea.addEventListener("input", (event) => {
   if (event.target.id === "translateSource") {
     translationState.source = event.target.value;
-    setTranslateStatus({ error: "" });
+    translationState.detectedSource = translationState.sourceLanguage === "auto" ? detectSourceLanguage(translationState.source) : translationState.sourceLanguage;
+    if (!translationState.source.trim()) {
+      setTranslateStatus({ status: "", error: "", result: "", extracted: translationState.extracted });
+    } else {
+      setTranslateStatus({ status: "Đang chờ nhập xong...", error: "", result: translationState.result });
+      scheduleTranslate();
+    }
   }
 });
 
