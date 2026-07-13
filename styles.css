@@ -438,6 +438,18 @@ a:hover {
   margin-bottom: 18px;
 }
 
+.toolbar.translate-toolbar {
+  grid-template-columns: 1fr;
+}
+
+.toolbar.translate-toolbar .tabbar {
+  justify-content: flex-end;
+}
+
+.search-box[hidden] {
+  display: none;
+}
+
 .search-box {
   display: grid;
   gap: 7px;
@@ -1900,7 +1912,7 @@ a:hover {
   }
 }
 
-/* Google Translate inspired layout */
+/* Translate workspace */
 .google-translate-panel {
   display: block;
   padding: 0;
@@ -1911,9 +1923,9 @@ a:hover {
 .translate-mode-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .translate-mode-button {
@@ -1921,24 +1933,19 @@ a:hover {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  padding: 0 16px;
-  border: 1px solid #d6dde8;
-  border-radius: 999px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   background: #ffffff;
-  color: #1558d6;
+  color: var(--ink);
   font-weight: 850;
   cursor: pointer;
 }
 
 .translate-mode-button.active {
-  border-color: #dbeafe;
-  background: #e8f0fe;
-  color: #174ea6;
-}
-
-.translate-mode-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.72;
+  border-color: var(--jade);
+  background: var(--jade-soft);
+  color: #064f49;
 }
 
 .translate-icon {
@@ -1956,6 +1963,7 @@ a:hover {
   grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr);
   gap: 4px;
   align-items: end;
+  margin-bottom: 0;
 }
 
 .language-tabs {
@@ -1967,38 +1975,26 @@ a:hover {
 }
 
 .language-tab,
-.language-more,
 .translate-swap-button {
   min-height: 42px;
   border: 0;
   background: transparent;
-  color: #5f6368;
+  color: var(--muted);
   font-weight: 850;
   cursor: pointer;
 }
 
 .language-tab {
   flex: 0 0 auto;
-  padding: 0 13px;
+  padding: 0 12px;
   border-bottom: 2px solid transparent;
   border-radius: 0;
+  font-size: 0.92rem;
 }
 
 .language-tab.active {
-  border-bottom-color: #1a73e8;
-  color: #1a73e8;
-}
-
-.language-tab:disabled,
-.language-more:disabled {
-  cursor: default;
-  opacity: 0.78;
-}
-
-.language-more {
-  width: 34px;
-  flex: 0 0 auto;
-  font-size: 1.25rem;
+  border-bottom-color: var(--jade);
+  color: var(--jade);
 }
 
 .translate-swap-button {
@@ -2007,11 +2003,11 @@ a:hover {
   display: inline-grid;
   place-items: center;
   justify-self: center;
-  color: #9aa0a6;
+  color: var(--muted);
 }
 
 .translate-swap-button:hover {
-  color: #1a73e8;
+  color: var(--jade);
 }
 
 .translate-board {
@@ -2024,15 +2020,15 @@ a:hover {
   min-height: 236px;
   display: grid;
   grid-template-rows: 1fr auto;
-  border: 1px solid #dadce0;
-  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   overflow: hidden;
   background: #ffffff;
 }
 
 .translate-result-card {
-  border-color: #eef2f8;
-  background: #f2f5fa;
+  border-color: var(--line);
+  background: var(--surface-soft);
 }
 
 .translate-card-body {
@@ -2049,13 +2045,14 @@ a:hover {
   outline: none;
   resize: none;
   background: transparent;
-  color: #202124;
-  font-size: 1.22rem;
+  color: var(--ink);
+  font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+  font-size: 1.05rem;
   line-height: 1.55;
 }
 
 .translate-card textarea::placeholder {
-  color: #8b929c;
+  color: var(--muted);
 }
 
 .translate-clear-button {
@@ -2070,7 +2067,7 @@ a:hover {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #70757a;
+  color: var(--muted);
   cursor: pointer;
 }
 
@@ -2100,10 +2097,10 @@ a:hover {
   align-items: center;
   justify-content: center;
   width: min(260px, 100%);
-  border: 1px dashed #b7c3d7;
-  border-radius: 10px;
-  background: #f8fbff;
-  color: #1558d6;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--jade);
   font-weight: 850;
   cursor: pointer;
 }
@@ -2119,16 +2116,16 @@ a:hover {
 .image-upload-pane .image-name,
 .image-upload-pane #translateExtracted {
   margin: 0;
-  color: #5f6368;
+  color: var(--muted);
   font-size: 0.88rem;
   line-height: 1.45;
 }
 
 .translate-result-card h3 {
   margin: 0 0 8px;
-  color: #4b5563;
-  font-size: 1.35rem;
-  font-weight: 500;
+  color: var(--jade);
+  font-size: 0.98rem;
+  font-weight: 850;
 }
 
 .translate-result-card h3.empty {
@@ -2137,14 +2134,14 @@ a:hover {
 
 .translate-result-card p {
   margin: 0;
-  color: #202124;
-  font-size: 1.22rem;
+  color: var(--ink);
+  font-size: 1.05rem;
   line-height: 1.55;
   white-space: pre-wrap;
 }
 
 .translate-result-card p.placeholder {
-  color: #4b5563;
+  color: var(--muted);
 }
 
 .translate-card-footer {
@@ -2169,17 +2166,17 @@ a:hover {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #9aa0a6;
+  color: var(--muted);
   cursor: pointer;
 }
 
 .translate-round-button.primary {
-  background: #1a73e8;
+  background: var(--jade);
   color: #ffffff;
 }
 
 .translate-round-button.primary:hover {
-  background: #1558d6;
+  background: #0b5f58;
 }
 
 .translate-feedback-row {
@@ -2188,18 +2185,12 @@ a:hover {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-top: 6px;
 }
 
 .translate-feedback-row .translate-status {
   margin-right: auto;
-}
-
-.translate-feedback-row > span {
-  color: #5f6368;
-  font-size: 0.8rem;
-  font-style: italic;
 }
 
 .translate-feedback-row .message-error {

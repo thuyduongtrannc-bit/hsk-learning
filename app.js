@@ -84,6 +84,8 @@ const elements = {
   levelGoals: document.querySelector("#levelGoals"),
   overallKnown: document.querySelector("#overallKnown"),
   overallProgress: document.querySelector("#overallProgress"),
+  toolbar: document.querySelector(".toolbar"),
+  searchBox: document.querySelector(".search-box"),
   wordSearch: document.querySelector("#wordSearch"),
   tabButtons: Array.from(document.querySelectorAll(".tab-button")),
   contentArea: document.querySelector("#contentArea"),
@@ -636,6 +638,9 @@ function renderOverallProgress() {
 }
 
 function renderTabs() {
+  const isTranslateTab = state.tab === "translate";
+  if (elements.toolbar) elements.toolbar.classList.toggle("translate-toolbar", isTranslateTab);
+  if (elements.searchBox) elements.searchBox.hidden = isTranslateTab;
   elements.tabButtons.forEach((button) => {
     const selected = button.dataset.tab === state.tab;
     button.setAttribute("aria-selected", String(selected));
@@ -1323,14 +1328,6 @@ function renderTranslate() {
           ${translateToolIcon("image")}
           <span>Hình ảnh</span>
         </button>
-        <button class="translate-mode-button" type="button" disabled>
-          ${translateToolIcon("file")}
-          <span>Tài liệu</span>
-        </button>
-        <button class="translate-mode-button" type="button" disabled>
-          ${translateToolIcon("web")}
-          <span>Trang web</span>
-        </button>
       </div>
 
       <div class="translate-language-row">
@@ -1339,7 +1336,6 @@ function renderTranslate() {
           <button class="language-tab${translationState.sourceLanguage === "zh" ? " active" : ""}" type="button" data-translate="source" data-source="zh">Trung</button>
           <button class="language-tab${translationState.sourceLanguage === "vi" ? " active" : ""}" type="button" data-translate="source" data-source="vi">Việt</button>
           <button class="language-tab${translationState.sourceLanguage === "en" ? " active" : ""}" type="button" data-translate="source" data-source="en">Anh</button>
-          <button class="language-more" type="button" disabled aria-label="Thêm ngôn ngữ nguồn">⌄</button>
         </div>
         <button class="translate-swap-button" type="button" data-translate="swap" aria-label="Đổi chiều dịch" title="Đổi chiều dịch">
           ${translateToolIcon("swap")}
@@ -1348,7 +1344,6 @@ function renderTranslate() {
           <button class="language-tab${translationState.target === "vi" ? " active" : ""}" type="button" data-translate="target" data-target="vi">Việt</button>
           <button class="language-tab${translationState.target === "en" ? " active" : ""}" type="button" data-translate="target" data-target="en">Anh</button>
           <button class="language-tab${translationState.target === "zh" ? " active" : ""}" type="button" data-translate="target" data-target="zh">Trung (Giản thể)</button>
-          <button class="language-more" type="button" disabled aria-label="Thêm ngôn ngữ đích">⌄</button>
         </div>
       </div>
 
@@ -1395,7 +1390,6 @@ function renderTranslate() {
       <div class="translate-feedback-row">
         <p id="translateStatus" class="translate-status">${htmlEscape(translationState.status)}</p>
         <p id="translateError" class="message-error${translationState.error ? " show" : ""}">${htmlEscape(translationState.error)}</p>
-        <span>Gửi ý kiến phản hồi</span>
       </div>
     </section>
   `;
