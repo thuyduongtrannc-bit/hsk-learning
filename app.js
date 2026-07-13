@@ -1575,12 +1575,97 @@ function tagLabel(tag) {
 }
 
 function videoStudyLines(video, level) {
+  const title = `${video.title || ""}`.toLowerCase();
   const tag = video.tags.find((item) => item !== "beginner") || video.tags[0] || "other";
+  const themedLines = [
+    {
+      match: /color|颜色|顏色/,
+      lines: [
+        ["这是什么颜色？", "Zhè shì shénme yánsè?", "Đây là màu gì?"],
+        ["这是红色。", "Zhè shì hóngsè.", "Đây là màu đỏ."],
+        ["这是黄色。", "Zhè shì huángsè.", "Đây là màu vàng."],
+        ["这是蓝色。", "Zhè shì lánsè.", "Đây là màu xanh dương."],
+        ["这是绿色。", "Zhè shì lǜsè.", "Đây là màu xanh lá."],
+        ["我喜欢蓝色，你呢？", "Wǒ xǐhuān lánsè, nǐ ne?", "Tôi thích màu xanh dương, còn bạn thì sao?"]
+      ]
+    },
+    {
+      match: /daily routine|my daily|一天|日常|morning|bathroom|早/,
+      lines: [
+        ["我早上七点起床。", "Wǒ zǎoshang qī diǎn qǐchuáng.", "Tôi thức dậy lúc bảy giờ sáng."],
+        ["我先刷牙，然后洗脸。", "Wǒ xiān shuāyá, ránhòu xǐliǎn.", "Tôi đánh răng trước, sau đó rửa mặt."],
+        ["早饭以后，我去上班。", "Zǎofàn yǐhòu, wǒ qù shàngbān.", "Sau bữa sáng, tôi đi làm."],
+        ["今天的安排很简单。", "Jīntiān de ānpái hěn jiǎndān.", "Lịch hôm nay rất đơn giản."],
+        ["晚上我复习中文。", "Wǎnshang wǒ fùxí Zhōngwén.", "Buổi tối tôi ôn tiếng Trung."],
+        ["这是我的一天。", "Zhè shì wǒ de yì tiān.", "Đây là một ngày của tôi."]
+      ]
+    },
+    {
+      match: /direction|road|traffic|transport|买票|票|bus|train|交通/,
+      lines: [
+        ["请问，地铁站在哪儿？", "Qǐngwèn, dìtiězhàn zài nǎr?", "Xin hỏi, ga tàu điện ngầm ở đâu?"],
+        ["一直往前走，然后右转。", "Yìzhí wǎng qián zǒu, ránhòu yòu zhuǎn.", "Đi thẳng về phía trước, sau đó rẽ phải."],
+        ["我要买一张票。", "Wǒ yào mǎi yì zhāng piào.", "Tôi muốn mua một vé."],
+        ["这辆车去市中心吗？", "Zhè liàng chē qù shì zhōngxīn ma?", "Xe này đi trung tâm thành phố không?"],
+        ["请在下一站下车。", "Qǐng zài xià yí zhàn xià chē.", "Vui lòng xuống ở trạm tiếp theo."],
+        ["谢谢你的帮助。", "Xièxie nǐ de bāngzhù.", "Cảm ơn sự giúp đỡ của bạn."]
+      ]
+    },
+    {
+      match: /food|supermarket|price|吃|菜|蔬菜|水果|咖啡|餐|market/,
+      lines: [
+        ["你想吃什么？", "Nǐ xiǎng chī shénme?", "Bạn muốn ăn gì?"],
+        ["我想喝一杯咖啡。", "Wǒ xiǎng hē yì bēi kāfēi.", "Tôi muốn uống một ly cà phê."],
+        ["这个菜有点儿辣。", "Zhège cài yǒudiǎnr là.", "Món này hơi cay."],
+        ["苹果多少钱一斤？", "Píngguǒ duōshǎo qián yì jīn?", "Táo bao nhiêu tiền một cân?"],
+        ["我们一起去超市吧。", "Wǒmen yìqǐ qù chāoshì ba.", "Chúng ta cùng đi siêu thị nhé."],
+        ["今天的饭很好吃。", "Jīntiān de fàn hěn hǎochī.", "Bữa ăn hôm nay rất ngon."]
+      ]
+    },
+    {
+      match: /body|身体|head|hand|leg/,
+      lines: [
+        ["这是我的头。", "Zhè shì wǒ de tóu.", "Đây là đầu của tôi."],
+        ["这是我的手。", "Zhè shì wǒ de shǒu.", "Đây là tay của tôi."],
+        ["我的眼睛有点儿累。", "Wǒ de yǎnjing yǒudiǎnr lèi.", "Mắt tôi hơi mỏi."],
+        ["请举起你的右手。", "Qǐng jǔ qǐ nǐ de yòu shǒu.", "Hãy giơ tay phải của bạn lên."],
+        ["我们一起做运动。", "Wǒmen yìqǐ zuò yùndòng.", "Chúng ta cùng tập thể dục."],
+        ["身体健康很重要。", "Shēntǐ jiànkāng hěn zhòngyào.", "Sức khỏe cơ thể rất quan trọng."]
+      ]
+    },
+    {
+      match: /family|home|siblings|家|兄弟|姐妹|孩子|birthday|生日/,
+      lines: [
+        ["你家有几口人？", "Nǐ jiā yǒu jǐ kǒu rén?", "Nhà bạn có mấy người?"],
+        ["我有一个哥哥和一个妹妹。", "Wǒ yǒu yí ge gēge hé yí ge mèimei.", "Tôi có một anh trai và một em gái."],
+        ["今天是他的生日。", "Jīntiān shì tā de shēngrì.", "Hôm nay là sinh nhật của anh ấy."],
+        ["我们一起吃蛋糕。", "Wǒmen yìqǐ chī dàngāo.", "Chúng ta cùng ăn bánh kem."],
+        ["爸爸妈妈都很高兴。", "Bàba māma dōu hěn gāoxìng.", "Bố mẹ đều rất vui."],
+        ["这是一个温暖的家。", "Zhè shì yí ge wēnnuǎn de jiā.", "Đây là một gia đình ấm áp."]
+      ]
+    },
+    {
+      match: /spring|nature|bear|动物|熊|春天|vegetable|蔬菜/,
+      lines: [
+        ["春天来了，天气变暖了。", "Chūntiān lái le, tiānqì biàn nuǎn le.", "Mùa xuân đến rồi, thời tiết ấm lên."],
+        ["树上有很多绿色的叶子。", "Shù shàng yǒu hěn duō lǜsè de yèzi.", "Trên cây có nhiều lá màu xanh."],
+        ["小熊在森林里找食物。", "Xiǎo xióng zài sēnlín lǐ zhǎo shíwù.", "Chú gấu con tìm thức ăn trong rừng."],
+        ["这些蔬菜很新鲜。", "Zhèxiē shūcài hěn xīnxiān.", "Những loại rau này rất tươi."],
+        ["我们要保护自然。", "Wǒmen yào bǎohù zìrán.", "Chúng ta cần bảo vệ thiên nhiên."],
+        ["这个故事适合慢慢听。", "Zhège gùshi shìhé mànman tīng.", "Câu chuyện này phù hợp để nghe chậm rãi."]
+      ]
+    }
+  ];
+  const matched = themedLines.find((item) => item.match.test(title));
+  if (matched) return matched.lines;
   if (level.id <= 2) {
     return [
       ["你好，我们今天一起学习中文。", "Nǐ hǎo, wǒmen jīntiān yìqǐ xuéxí Zhōngwén.", "Xin chào, hôm nay chúng ta cùng học tiếng Trung."],
       ["这个视频有很多简单的句子。", "Zhège shìpín yǒu hěn duō jiǎndān de jùzi.", "Video này có nhiều câu đơn giản."],
-      ["请听一遍，然后跟着说。", "Qǐng tīng yí biàn, ránhòu gēnzhe shuō.", "Hãy nghe một lần, sau đó nói theo."]
+      ["请先听一遍，然后跟着说。", "Qǐng xiān tīng yí biàn, ránhòu gēnzhe shuō.", "Hãy nghe một lần trước, sau đó nói theo."],
+      ["遇到生词时，可以看中文和越南语。", "Yùdào shēngcí shí, kěyǐ kàn Zhōngwén hé Yuènányǔ.", "Khi gặp từ mới, bạn có thể xem tiếng Trung và tiếng Việt."],
+      ["每个句子都可以点喇叭再听一次。", "Měi ge jùzi dōu kěyǐ diǎn lǎba zài tīng yí cì.", "Mỗi câu đều có thể bấm loa để nghe lại một lần."],
+      ["学完以后，请用自己的话复述。", "Xué wán yǐhòu, qǐng yòng zìjǐ de huà fùshù.", "Sau khi học xong, hãy kể lại bằng lời của bạn."]
     ];
   }
 
