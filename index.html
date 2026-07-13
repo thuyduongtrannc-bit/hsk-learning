@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HSK Chinese Studio</title>
+    <link rel="stylesheet" href="./styles.css?v=20260713-google-translate-ui" />
+  </head>
+  <body>
+    <section id="loginScreen" class="login-screen" aria-label="Đăng nhập HSK Chinese Studio">
+      <form id="loginForm" class="login-card">
+        <div class="login-brand">
+          <span class="brand-mark" aria-hidden="true">汉</span>
+          <div>
+            <h1>HSK Chinese Studio</h1>
+            <p>Đăng nhập để tiếp tục học</p>
+          </div>
+        </div>
+
+        <label class="login-field">
+          <span>Tài khoản</span>
+          <input id="loginUsername" type="text" autocomplete="username" placeholder="admin" />
+        </label>
+
+        <label class="login-field">
+          <span>Mật khẩu</span>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="123456" />
+        </label>
+
+        <p class="default-accounts">Default account:
+          <button type="button" data-login-fill="admin">admin / 123456</button>
+          <button type="button" data-login-fill="guest">guest / 123456</button>
+          <button type="button" data-login-fill="user">user / 123456</button>
+        </p>
+
+        <p id="loginError" class="login-error" role="alert"></p>
+        <button class="action-button login-submit" type="submit">Đăng nhập</button>
+      </form>
+    </section>
+
+    <div class="app-shell auth-hidden">
+      <aside class="sidebar" aria-label="Chọn cấp HSK">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">汉</span>
+          <div>
+            <h1>HSK Chinese Studio</h1>
+            <p>HSK 1-6 · từ vựng · viết · hội thoại · video</p>
+          </div>
+        </div>
+
+        <div id="userPanel" class="user-panel" hidden>
+          <div>
+            <span>Đang đăng nhập</span>
+            <strong id="activeUserLabel"></strong>
+          </div>
+          <button id="logoutButton" class="ghost-button" type="button">Đăng xuất</button>
+        </div>
+
+        <div class="level-summary">
+          <span id="overallKnown">0</span>
+          <strong>từ đã nhớ</strong>
+          <div class="progress-track" aria-hidden="true">
+            <div id="overallProgress" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <nav id="levelNav" class="level-nav"></nav>
+      </aside>
+
+      <main class="main-panel">
+        <section class="hero-band" aria-label="Tổng quan cấp học">
+          <div class="hero-copy">
+            <p id="levelBand" class="eyebrow"></p>
+            <h2 id="levelTitle"></h2>
+            <p id="levelTarget"></p>
+            <div id="levelGoals" class="goal-list"></div>
+          </div>
+        </section>
+
+        <div class="toolbar">
+          <label class="search-box">
+            <span>Tìm từ</span>
+            <input id="wordSearch" type="search" placeholder="中文, pinyin, nghĩa..." autocomplete="off" />
+          </label>
+
+          <div class="tabbar" role="tablist" aria-label="Chế độ học">
+            <button class="tab-button" type="button" data-tab="words" role="tab">Từ vựng</button>
+            <button class="tab-button" type="button" data-tab="flashcards" role="tab">Flashcard</button>
+            <button class="tab-button" type="button" data-tab="writing" role="tab">Tập viết</button>
+            <button class="tab-button" type="button" data-tab="dialogues" role="tab">Hội thoại</button>
+            <button class="tab-button" type="button" data-tab="videos" role="tab">Video</button>
+            <button class="tab-button" type="button" data-tab="grammar" role="tab">Ngữ pháp</button>
+            <button class="tab-button" type="button" data-tab="translate" role="tab">Dịch</button>
+          </div>
+        </div>
+
+        <section id="contentArea" class="content-area" aria-live="polite"></section>
+
+        <footer class="page-footer">
+          <span>Bộ từ HSK 1-6 dùng word list HSK Official With Definitions 2012, chia riêng từng cấp và không lặp từ cấp trước.</span>
+          <a href="https://corodomo.com/en/videos?lang=zh-CN" target="_blank" rel="noreferrer">
+            Xem video hội thoại trên Corodomo
+          </a>
+        </footer>
+      </main>
+    </div>
+
+    <script src="./hsk-data.js?v=20260710-hsk"></script>
+    <script src="./hsk-official-2012.js?v=20260710-level-split"></script>
+    <script src="./hsk-vi-overrides.js?v=20260710-auto-vi-2"></script>
+    <script src="./hsk-vi-meaning.js?v=20260710-examples-meaning"></script>
+    <script src="./hsk-dialogues.js?v=20260710-level-dialogues"></script>
+    <script src="./hsk-videos.js?v=20260710-corodomo-hsk"></script>
+    <script src="./hsk-grammar.js?v=20260713-grammar"></script>
+    <script src="./hsk-grammar-prepedu.js?v=20260713-prepedu"></script>
+    <script src="./app.js?v=20260713-google-translate-ui"></script>
+  </body>
+</html>
